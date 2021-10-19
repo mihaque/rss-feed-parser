@@ -2,6 +2,8 @@ import argparse
 import logging
 import sys
 import feedparser
+import yaml
+
 from utils.entry import Entry
 from utils.csv_parser import WriteIntoCSV
 
@@ -12,11 +14,13 @@ class RSSFeedParser():
         self._news_feed = feedparser.parse(self._feed_url)
 
     def generate_csv(self, file_name, header):
+        logger.info('generating csv')
         entries = self.__return_all_entries()
         csv_writer = WriteIntoCSV(file_name, header)
         csv_writer.write(entries)
 
     def __return_all_entries(self):
+        logger.info('parsing RSS feeds')
         entries = self._news_feed.entries
         entry_objects = []
         for entry in entries:
@@ -34,10 +38,16 @@ class RSSFeedParser():
             entry_object.tags = tags
             entry_object.published = entry.published
             entry_objects.append(entry_object)
+        logger.info(f'total {len(entry_objects)} sections are found')
         return entry_objects
 
 
 if __name__ == '__main__':
+
+    with open('config.yaml', 'r') as config_file:
+        config = yaml.safe_load(config_file)
+
+    header = config.get('csv_header').split('|')
 
     # Initialise logging
     logging.basicConfig(level=logging.INFO)
@@ -51,7 +61,7 @@ if __name__ == '__main__':
                         default='https://www.europarl.europa.eu/rss/doc/top-stories/en.xml')
     parser.add_argument('--output', help='provide the csv file with path here', default='output.csv')
     args = parser.parse_args()
-    logger.info(f'Parsing{args.title_content} from {args.feed_url}')
+    logger.info(f'parsing{args.title_content} from {args.feed_url}')
 
     rss_feed_parser = RSSFeedParser(title_content=args.title_content, feed_url=args.feed_url)
-    rss_feed_parser.generate_csv(args.output, ['Title', 'Link', 'Summary', 'Source', 'Tags', 'Published'])
+    rss_feed_parser.generate_csv(args.output, header)

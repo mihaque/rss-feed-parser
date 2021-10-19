@@ -1,4 +1,5 @@
 import csv
+
 from .entry import Entry
 
 class WriteIntoCSV():
