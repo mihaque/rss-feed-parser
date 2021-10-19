@@ -57,11 +57,3 @@ class Entry():
     @published.setter
     def published(self, published):
         self._published = published
-
-#
-# if __name__ == '__main__':
-#     entry = Entry()
-#     entry.title = 'title'
-#     entry.link = 'link'
-
-
