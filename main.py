@@ -6,9 +6,9 @@ from utils.entry import Entry
 from utils.csv_parser import WriteIntoCSV
 
 class RSSFeedParser():
-    def __init__(self, feed_url, title_node):
+    def __init__(self, feed_url, title_content):
         self._feed_url = feed_url
-        self._title_node = title_node
+        self._title_content = title_content
         self._news_feed = feedparser.parse(self._feed_url)
 
     def generate_csv(self, file_name, header):
@@ -20,6 +20,8 @@ class RSSFeedParser():
         entries = self._news_feed.entries
         entry_objects = []
         for entry in entries:
+            if not (self._title_content) in entry.title:
+                continue
             entry_object = Entry()
             entry_object.title = entry.title
             entry_object.link = entry.link
@@ -43,12 +45,13 @@ if __name__ == '__main__':
 
     # Parse command line arguements
     parser = argparse.ArgumentParser()
-    parser.add_argument('--title_node', help='provide the title node to parse here', default='Top stories')
+    parser.add_argument('--title_content', help='provide the title content to parse here. based on this '
+                                                'title content, the titles will be fetched', default='Top story')
     parser.add_argument('--feed_url', help='provide the RSS feed url here',
                         default='https://www.europarl.europa.eu/rss/doc/top-stories/en.xml')
     parser.add_argument('--output', help='provide the csv file with path here', default='output.csv')
     args = parser.parse_args()
-    logger.info(f'Parsing{args.title_node} from {args.feed_url}')
+    logger.info(f'Parsing{args.title_content} from {args.feed_url}')
 
-    rss_feed_parser = RSSFeedParser(title_node=args.title_node, feed_url=args.feed_url)
+    rss_feed_parser = RSSFeedParser(title_content=args.title_content, feed_url=args.feed_url)
     rss_feed_parser.generate_csv(args.output, ['Title', 'Link', 'Summary', 'Source', 'Tags', 'Published'])
